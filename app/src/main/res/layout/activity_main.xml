@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity"
     android:orientation="vertical"
+    android:padding="12dp"
     android:background="@android:color/holo_green_light">
 
     <TextView
@@ -26,19 +27,21 @@
         android:layout_weight="1"
         android:padding="8dp" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/addButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:background="@color/white"
         android:text="Tambah Data" />
 
-    <Button
-        android:id="@+id/logoutButton"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_logout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
+        android:background="@color/white"
         android:text="LOGOUT" />
 
 </LinearLayout>

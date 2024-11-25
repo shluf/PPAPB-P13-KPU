@@ -1,50 +1,69 @@
 package com.example.ppapb_p13_kpu.ui
 
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.ppapb_p13_kpu.R
+import com.example.ppapb_p13_kpu.database.PrefManager
 import com.example.ppapb_p13_kpu.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityLoginBinding
-    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var prefManager: PrefManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        sharedPreferences = getSharedPreferences("voter_prefs", Context.MODE_PRIVATE)
+        prefManager = PrefManager.getInstance(this)
 
-        // Check if already logged in
-        if (sharedPreferences.getBoolean("is_logged_in", false)) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
-
-        binding.loginButton.setOnClickListener {
-            val username = binding.usernameInput.text.toString()
-            val password = binding.passwordInput.text.toString()
-
-            if (username == "admin" && password == "admin") {
-                sharedPreferences.edit().putBoolean("is_logged_in", true).apply()
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show()
+        with(binding){
+            btnLogin.setOnClickListener {
+                val username = edtUsername.text.toString()
+                val password = edtPassword.text.toString()
+                if (username.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Mohon isi semua data",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    if (isValidUsernamePassword()) {
+                        prefManager.setLoggedIn(true)
+                        checkLoginStatus()
+                    } else {
+                        Toast.makeText(this@LoginActivity, "Username atau password salah", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            textRegister.setOnClickListener {
+                startActivity(
+                    Intent(this@LoginActivity,
+                        RegisterActivity::class.java)
+                )
             }
         }
-
-        binding.registerText.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+    }
+    private fun isValidUsernamePassword(): Boolean{
+        val username = prefManager.getUsername()
+        val password = prefManager.getPassword()
+        val inputUsername = binding.edtUsername.text.toString()
+        val inputPassword = binding.edtPassword.text.toString()
+        return username == inputUsername && password == inputPassword
+    }
+    private fun checkLoginStatus() {
+        val isLoggedIn = prefManager.isLoggedIn()
+        if (isLoggedIn) {
+            Toast.makeText(this@LoginActivity, "Login berhasil",
+                Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this@LoginActivity,
+                MainActivity::class.java))
+            finish()
+        } else {
+            Toast.makeText(this@LoginActivity, "Login gagal",
+                Toast.LENGTH_SHORT).show()
         }
-
     }
 }

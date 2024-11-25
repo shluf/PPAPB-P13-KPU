@@ -48,9 +48,4 @@ class PrefManager private constructor(context: Context) {
     fun getPassword(): String {
         return sharedPreferences.getString(KEY_PASSWORD, "") ?: ""
     }
-    fun clear() {
-        val editor = sharedPreferences.edit()
-        editor.clear()
-        editor.apply()
-    }
 }

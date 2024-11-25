@@ -1,48 +1,83 @@
 package com.example.ppapb_p13_kpu.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.ppapb_p13_kpu.R
-import com.example.ppapb_p13_kpu.database.VoterViewModel
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.ppapb_p13_kpu.database.PrefManager
+import com.example.ppapb_p13_kpu.database.VoterRoomDatabase
 import com.example.ppapb_p13_kpu.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var voterViewModel: VoterViewModel
+    private lateinit var prefManager: PrefManager
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var database: VoterRoomDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        recyclerView = binding.voterRecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        voterViewModel = ViewModelProvider(this)[VoterViewModel::class.java]
+        database = VoterRoomDatabase.getDatabase(this)
 
-        binding.addButton.setOnClickListener {
-            startActivity(Intent(this, AddVoterActivity::class.java))
+        prefManager = PrefManager.getInstance(this)
+        checkLoginStatus()
+
+        loadDataVoters()
+        with(binding) {
+            addButton.setOnClickListener {
+                startActivity(Intent(this@MainActivity, AddVoterActivity::class.java))
+            }
+
+            btnLogout.setOnClickListener {
+                prefManager.setLoggedIn(false)
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
+            }
         }
+    }
 
-        binding.logoutButton.setOnClickListener {
-            getSharedPreferences("voter_prefs", Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean("is_logged_in", false)
-                .apply()
-            startActivity(Intent(this, LoginActivity::class.java))
+    fun checkLoginStatus() {
+        val isLoggedIn = prefManager.isLoggedIn()
+        if (!isLoggedIn) {
+            startActivity(Intent(this@MainActivity, LoginActivity::class.java))
             finish()
         }
+    }
 
+    private fun loadDataVoters() {
         lifecycleScope.launch {
-            voterViewModel.allVoters.collect { voters ->
-                // Update RecyclerView
-                // Implementation of adapter and recycler view setup
+            val voters = withContext(Dispatchers.IO) {
+                database.voterDao().getAllVoters()
             }
+
+            recyclerView.adapter = VoterDataAdapter(
+                voters,
+                onEditClick = { voter ->
+                    val intent = Intent(this@MainActivity, EditVoterActivity::class.java)
+                    intent.putExtra("VOTER_ID", voter.id)
+                    startActivity(intent)
+                },
+                onDeleteClick = { voter ->
+                    lifecycleScope.launch {
+                        database.voterDao().delete(voter)
+                        loadDataVoters()
+                    }
+                },
+                onDetailClick = { voter ->
+                    val intent = Intent(this@MainActivity, DetailVoterActivity::class.java)
+                    intent.putExtra("VOTER_ID", voter.id)
+                    startActivity(intent)
+                }
+            )
         }
     }
 }

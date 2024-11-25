@@ -6,16 +6,18 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VoterDao {
 
     @Query("SELECT * FROM voter_table ORDER BY name ASC")
-    fun getAllVoters(): Flow<List<Voter>>
+    fun getAllVoters(): List<Voter>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(voter: Voter)
+
+    @Query("SELECT * FROM voter_table WHERE id = :voterId")
+    suspend fun getVoterById(voterId: Int): Voter?
 
     @Update
     suspend fun update(voter: Voter)

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.EditVoterActivity"
     android:orientation="vertical"
-    android:background="#4CAF50"
+    android:background="@android:color/holo_green_light"
     android:padding="16dp">
 
     <TextView
@@ -61,6 +61,7 @@
         android:layout_marginBottom="8dp"/>
 
     <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -104,7 +105,17 @@
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/backButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="KEMBALI"
+        android:textColor="@android:color/black"
+        android:background="@android:color/white"
+        android:layout_marginBottom="16dp"
+        android:padding="16dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
